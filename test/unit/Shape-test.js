@@ -896,6 +896,7 @@ suite('Shape', function() {
     assert.equal(shape.strokeEnabled(), true);
     assert.equal(shape.shadowEnabled(), true);
     assert.equal(shape.dashEnabled(), true);
+    assert.equal(shape.dashOffset(), 0);
     assert.equal(shape.strokeScaleEnabled(), true);
     assert.equal(shape.fillPriority(), 'color');
     assert.equal(shape.fillPatternOffsetX(), 0);
@@ -939,17 +940,17 @@ suite('Shape', function() {
 
     showHit(layer);
 
-    stage._mousedown({
-      clientX: 300,
-      clientY: 120 + top
+    stage.simulateMouseDown({
+      x: 300,
+      y: 120
     });
 
-    Konva.DD._endDragBefore();
-    stage._mouseup({
-      clientX: 300,
-      clientY: 120 + top
+    // Konva.DD._endDragBefore();
+    stage.simulateMouseUp({
+      x: 300,
+      y: 120
     });
-    Konva.DD._endDragAfter({ dragEndNode: rect });
+    // Konva.DD._endDragAfter({ dragEndNode: rect });
 
     //TODO: can't get this to pass
     assert.equal(

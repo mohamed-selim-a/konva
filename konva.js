@@ -1,11 +1,11 @@
 /*
- * Konva JavaScript Framework v1.4.0
+ * Konva JavaScript Framework v1.5.0
  * http://konvajs.github.io/
  * Licensed under the MIT or GPL Version 2 licenses.
- * Date: Fri Feb 24 2017
+ * Date: Fri Mar 24 2017
  *
  * Original work Copyright (C) 2011 - 2013 by Eric Rowell (KineticJS)
- * Modified work Copyright (C) 2014 - 2015 by Anton Lavrenov (Konva)
+ * Modified work Copyright (C) 2014 - 2017 by Anton Lavrenov (Konva)
  *
  * @license
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,7 +38,7 @@
 
   var Konva = {
     // public
-    version: '1.4.0',
+    version: '1.5.0',
 
     // private
     stages: [],
@@ -197,11 +197,12 @@
       var ua = userAgent.toLowerCase(),
         // jQuery UA regex
         match = /(chrome)[ \/]([\w.]+)/.exec(ua) ||
-        /(webkit)[ \/]([\w.]+)/.exec(ua) ||
-        /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua) ||
-        /(msie) ([\w.]+)/.exec(ua) ||
-        (ua.indexOf('compatible') < 0 &&
-          /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua)) || [],
+          /(webkit)[ \/]([\w.]+)/.exec(ua) ||
+          /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua) ||
+          /(msie) ([\w.]+)/.exec(ua) ||
+          ua.indexOf('compatible') < 0 &&
+            /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua) ||
+          [],
         // adding mobile flag as well
         mobile = !!userAgent.match(
           /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile/i
@@ -227,7 +228,7 @@
         ? window
         : typeof WorkerGlobalScope !== 'undefined' ? self : {};
 
-  Konva.UA = Konva._parseUA((glob.navigator && glob.navigator.userAgent) || '');
+  Konva.UA = Konva._parseUA(glob.navigator && glob.navigator.userAgent || '');
 
   if (glob.Konva) {
     console.error(
@@ -1527,6 +1528,7 @@
     'shadowOffsetX',
     'shadowOffsetY',
     'lineCap',
+    'lineDashOffset',
     'lineJoin',
     'lineWidth',
     'miterLimit',
@@ -2075,6 +2077,7 @@
         this._applyLineCap(shape);
         if (dash && shape.dashEnabled()) {
           this.setLineDash(dash);
+          this.setAttr('lineDashOffset', shape.dashOffset());
         }
 
         this.setAttr('lineWidth', shape.strokeWidth());
@@ -8808,6 +8811,21 @@
      *  line.dash([10, 20, 0.001, 20]);
      */
 
+  Konva.Factory.addGetterSetter(Konva.Shape, 'dashOffset', 0);
+
+  /**
+     * get/set dash offset for stroke.
+     * @name dash
+     * @method
+     * @memberof Konva.Shape.prototype
+     * @param {Number} dash offset
+     * @returns {Number}
+     * @example
+     *  // apply dashed stroke that is 10px long and 5 pixels apart with an offset of 5px
+     *  line.dash([10, 5]);
+     *  line.dashOffset(5);
+     */
+
   Konva.Factory.addGetterSetter(Konva.Shape, 'shadowColor');
 
   /**
@@ -10384,7 +10402,7 @@
       this._mousewheel(evt);
     },
     _setPointerPosition: function(evt) {
-      var contentPosition = this._getContentPosition(), x = null, y = null;
+      var x = null, y = null;
       evt = evt ? evt : window.event;
 
       // touch events
@@ -10393,13 +10411,13 @@
         if (evt.touches.length > 0) {
           var touch = evt.touches[0];
           // get the information for finger #1
-          x = touch.clientX - contentPosition.left;
-          y = touch.clientY - contentPosition.top;
+          x = touch.offsetX;
+          y = touch.offsetY;
         }
       } else {
         // mouse events
-        x = evt.clientX - contentPosition.left;
-        y = evt.clientY - contentPosition.top;
+        x = evt.offsetX;
+        y = evt.offsetY;
       }
       if (x !== null && y !== null) {
         this.pointerPos = {
@@ -11487,8 +11505,6 @@
         this
       );
     }
-
-    this.lastBatchDrawTime = now();
 
     if (!this.batchAnim.isRunning()) {
       this.batchAnim.start();
